@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07070C">
+<title>AI Help Coach</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#07070C;--card:#111118;--card2:#17171F;
+  --acc:#7C3AED;--acc2:#2563EB;--green:#22C55E;--orange:#F59E0B;--red:#EF4444;
+  --txt:#fff;--muted:#8A8A9E;--dim:#55556A;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
+  --grad:linear-gradient(135deg,#7C3AED 0%,#2563EB 100%);
+  --nav:78px;
+}
+html,body{height:100%}
+body{background:#000;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden;overscroll-behavior:none}
+button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer;padding:0}
+input,textarea{font-family:inherit;outline:none}
+::-webkit-scrollbar{width:0;height:0}
+
+.app-shell{height:100dvh;display:flex;align-items:center;justify-content:center;background:radial-gradient(1100px 620px at 50% -12%,#17102f 0%,#07070C 58%)}
+.phone{position:relative;width:100%;height:100dvh;max-width:430px;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:640px){.phone{height:min(920px,94dvh);border-radius:48px;border:1px solid rgba(255,255,255,.09);box-shadow:0 50px 140px rgba(124,58,237,.22),0 0 0 10px #08080e,0 0 0 11px rgba(255,255,255,.05)}}
+
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:max(18px,env(safe-area-inset-top)) 18px 128px}
+
+/* Typo */
+.h1{font-size:27px;font-weight:800;letter-spacing:-.6px;line-height:1.15}
+.h2{font-size:20px;font-weight:800;letter-spacing:-.35px}
+.h3{font-size:15.5px;font-weight:700}
+.muted{color:var(--muted)}.dim{color:var(--dim)}
+.tiny{font-size:11px;font-weight:600}
+.small{font-size:12.5px;font-weight:500}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-weight:700;border-radius:16px;transition:transform .13s cubic-bezier(.34,1.4,.64,1);position:relative;overflow:hidden;padding:14px 20px;font-size:15px}
+.btn:active{transform:scale(.955)}
+.btn-primary{background:var(--grad);color:#fff;box-shadow:0 10px 30px rgba(124,58,237,.38),inset 0 1px 0 rgba(255,255,255,.22)}
+.btn-primary::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent 55%);pointer-events:none}
+.btn-secondary{background:rgba(255,255,255,.06);color:#fff;border:1px solid var(--border2)}
+.btn-ghost{background:transparent;color:var(--muted)}
+.btn-lg{padding:17px 24px;font-size:16px;border-radius:19px}
+.btn-sm{padding:10px 15px;font-size:13px;border-radius:13px}
+.btn-full{width:100%}
+.btn:disabled{opacity:.45;pointer-events:none}
+
+.chip{padding:9px 14px;border-radius:13px;font-size:12.5px;font-weight:650;background:rgba(255,255,255,.055);border:1px solid var(--border);color:#D6D6E4;transition:all .18s;white-space:nowrap}
+.chip:active{transform:scale(.95);background:rgba(124,58,237,.22);border-color:rgba(124,58,237,.45);color:#fff}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:18px;position:relative}
+.card-glow{background:linear-gradient(150deg,rgba(124,58,237,.16),rgba(37,99,235,.07) 45%,rgba(17,17,24,1) 78%);border:1px solid rgba(124,58,237,.24);box-shadow:0 18px 50px -22px rgba(124,58,237,.65)}
+
+/* Progress */
+.track{height:9px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;position:relative}
+.track.sm{height:6px}
+.fill{height:100%;border-radius:99px;background:var(--grad);box-shadow:0 0 16px rgba(124,58,237,.65);transition:width .8s cubic-bezier(.22,1,.36,1);position:relative}
+.fill::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shine 2.6s ease-in-out infinite}
+@keyframes shine{0%{transform:translateX(-100%)}60%,100%{transform:translateX(220%)}}
+
+/* Bottom nav */
+.bottomnav{position:absolute;left:0;right:0;bottom:0;z-index:40;display:flex;padding:9px 8px calc(9px + env(safe-area-inset-bottom));background:rgba(10,10,17,.85);backdrop-filter:blur(26px) saturate(160%);-webkit-backdrop-filter:blur(26px) saturate(160%);border-top:1px solid rgba(255,255,255,.075);border-radius:26px 26px 0 0;box-shadow:0 -18px 44px rgba(0,0,0,.6)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--dim);font-size:10px;font-weight:700;padding:7px 0 5px;border-radius:16px;transition:color .22s;background:none}
+.nav-item .ico{width:38px;height:26px;border-radius:11px;display:grid;place-items:center;transition:all .25s;font-size:20px;line-height:1}
+.nav-item.active{color:#C4B5FD}
+.nav-item.active .ico{background:rgba(124,58,237,.18);box-shadow:0 0 18px rgba(124,58,237,.45),inset 0 0 0 1px rgba(124,58,237,.32);transform:translateY(-1px)}
+
+/* Onboarding */
+.onb{display:flex;flex-direction:column;height:100%;position:relative}
+.onb-head{padding:max(20px,env(safe-area-inset-top)) 22px 0;display:flex;align-items:center;justify-content:space-between;min-height:56px}
+.onb-body{flex:1;overflow-y:auto;padding:26px 22px 30px;animation:fade .3s}
+.onb-foot{padding:12px 22px calc(22px + env(safe-area-inset-bottom))}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.dots{display:flex;gap:7px;justify-content:center}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
+.dot.active{width:22px;border-radius:99px;background:var(--grad);box-shadow:0 0 14px rgba(124,58,237,.8)}
+
+.opt{display:flex;align-items:center;gap:13px;width:100%;padding:15px 16px;border-radius:18px;margin-bottom:10px;background:rgba(255,255,255,.035);border:1.5px solid var(--border);transition:all .22s;text-align:left}
+.opt:active{transform:scale(.98)}
+.opt.sel{background:rgba(124,58,237,.14);border-color:rgba(124,58,237,.65);box-shadow:0 0 26px -6px rgba(124,58,237,.75)}
+.opt .em{font-size:22px;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.05);flex:none}
+.opt.sel .em{background:rgba(124,58,237,.2)}
+.opt .ck{width:22px;height:22px;border-radius:50%;flex:none;border:2px solid rgba(255,255,255,.18);display:grid;place-items:center;transition:all .25s;font-size:11px;font-weight:900}
+.opt.sel .ck{background:var(--grad);border-color:transparent;color:#fff}
+
+.input{width:100%;background:rgba(255,255,255,.04);border:1.5px solid var(--border);border-radius:17px;padding:15px 17px;color:#fff;font-size:15px;transition:border-color .2s,box-shadow .2s}
+.input:focus{border-color:rgba(124,58,237,.6);box-shadow:0 0 0 3px rgba(124,58,237,.14)}
+.input::placeholder{color:var(--dim)}
+
+/* Tasks */
+.task{display:flex;align-items:center;gap:12px;padding:12px 13px;border-radius:17px;background:rgba(255,255,255,.028);border:1px solid rgba(255,255,255,.05);margin-bottom:9px;transition:all .22s}
+.task:active{transform:scale(.985)}
+.task.done{background:rgba(34,197,94,.055);border-color:rgba(34,197,94,.16)}
+.task.done .ttl{color:var(--dim);text-decoration:line-through}
+.check{width:25px;height:25px;border-radius:50%;flex:none;border:2px solid rgba(255,255,255,.17);display:grid;place-items:center;color:#fff;transition:all .25s}
+.check.on{background:var(--grad);border-color:transparent;box-shadow:0 0 16px rgba(124,58,237,.7);animation:pop .38s cubic-bezier(.34,1.6,.64,1)}
+@keyframes pop{0%{transform:scale(.55)}55%{transform:scale(1.18)}100%{transform:scale(1)}}
+.task .em{width:34px;height:34px;border-radius:11px;flex:none;display:grid;place-items:center;font-size:16px;background:rgba(255,255,255,.05)}
+.task .bd{flex:1;min-width:0}
+.ttl{font-size:14px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.xp{font-size:11.5px;font-weight:800;color:#A78BFA;flex:none;background:rgba(124,58,237,.12);padding:4px 9px;border-radius:9px}
+.task.done .xp{color:#4ADE80;background:rgba(34,197,94,.12)}
+
+/* Home */
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:20px}
+.avatar{position:relative;width:48px;height:48px;border-radius:16px;flex:none;background:var(--grad);display:grid;place-items:center;font-weight:800;font-size:18px;box-shadow:0 8px 24px rgba(124,58,237,.4)}
+.avatar .lvl{position:absolute;bottom:-5px;right:-5px;background:#0B0B12;border:1.5px solid rgba(124,58,237,.6);color:#C4B5FD;font-size:9.5px;font-weight:800;border-radius:8px;padding:1.5px 5px;font-style:normal}
+.lvl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.lvl-label{font-size:11px;font-weight:800;letter-spacing:1.6px;color:#A78BFA}
+.streak{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(239,68,68,.13));border:1px solid rgba(245,158,11,.3);color:#FBBF24;font-size:12px;font-weight:800;padding:5px 11px;border-radius:99px}
+.xp-row{display:flex;align-items:baseline;justify-content:space-between;margin-top:11px}
+.xp-big{font-size:22px;font-weight:800;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
+.xp-big span{font-size:14px;color:var(--muted);font-weight:700}
+
+/* Chat */
+.chat-wrap{position:absolute;inset:0;display:flex;flex-direction:column;padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom))}
+.chat-head{display:flex;align-items:center;gap:12px;padding:max(16px,env(safe-area-inset-top)) 18px 14px;border-bottom:1px solid var(--border);background:rgba(9,9,15,.85);backdrop-filter:blur(20px);z-index:3}
+.avatar-ai{position:relative;width:44px;height:44px;border-radius:50%;flex:none;background:linear-gradient(140deg,#7C3AED,#2563EB);display:grid;place-items:center;box-shadow:0 0 22px rgba(124,58,237,.55)}
+.avatar-ai::before{content:"";position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(from 0deg,transparent,rgba(124,58,237,.9),transparent 60%);animation:spin 3.6s linear infinite;z-index:-1;filter:blur(4px)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.avatar-ai.sm{width:30px;height:30px}
+.avatar-ai svg{width:60%;height:60%}
+.online{width:7px;height:7px;border-radius:50%;background:#22C55E;box-shadow:0 0 9px #22C55E;display:inline-block;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+.chat-scroll{flex:1;overflow-y:auto;padding:18px 16px 12px;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:9px;align-items:flex-end;animation:fade .34s}
+.msg.user{flex-direction:row-reverse}
+.msg .body{max-width:82%;display:flex;flex-direction:column;gap:8px}
+.msg.user .body{align-items:flex-end}
+.bub{padding:12px 15px;border-radius:19px;font-size:14px;line-height:1.52;white-space:pre-line;font-weight:500}
+.msg.ai .bub{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:6px;color:#E9E9F2}
+.msg.user .bub{background:var(--grad);color:#fff;border-bottom-right-radius:6px;box-shadow:0 8px 22px -8px rgba(124,58,237,.8)}
+.typing{display:flex;gap:5px;padding:15px}
+.typing span{width:6.5px;height:6.5px;border-radius:50%;background:#8B7BE8;animation:bounce 1.25s infinite}
+.typing span:nth-child(2){animation-delay:.16s}
+.typing span:nth-child(3){animation-delay:.32s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-6px);opacity:1}}
+.acts{display:flex;flex-wrap:wrap;gap:7px}
+.chat-quick{display:flex;gap:8px;overflow-x:auto;padding:10px 16px 4px;scrollbar-width:none}
+.chat-quick::-webkit-scrollbar{display:none}
+.chat-in{display:flex;gap:9px;align-items:flex-end;padding:10px 16px 14px}
+.chat-txt{flex:1;background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:13px 16px;color:#fff;font-size:14.5px;resize:none;max-height:110px}
+.send{width:46px;height:46px;border-radius:16px;flex:none;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:18px;box-shadow:0 8px 22px -6px rgba(124,58,237,.85)}
+.send:active{transform:scale(.9)}
+
+/* Goals */
+.goal{border-radius:22px;padding:17px;margin-bottom:13px;background:var(--card);border:1px solid var(--border);position:relative;overflow:hidden}
+.goal::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gc,#7C3AED),transparent 75%)}
+.goal-cat{font-size:10px;font-weight:800;letter-spacing:1.3px;display:inline-flex;align-items:center;gap:6px}
+.goal-title{font-size:17px;font-weight:800;letter-spacing:-.35px;margin:8px 0 14px}
+.goal-meta{display:flex;align-items:center;justify-content:space-between;margin-top:11px;font-size:11.5px;font-weight:700}
+
+/* Stats */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:19px;padding:15px}
+.stat-val{font-size:23px;font-weight:800;letter-spacing:-1px;line-height:1.1}
+.stat-lbl{font-size:11.5px;color:var(--muted);font-weight:600;margin-top:5px}
+
+/* Badges */
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.badge{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 5px;border-radius:17px;background:rgba(255,255,255,.028);border:1px solid var(--border)}
+.badge.lock{opacity:.32;filter:grayscale(1)}
+.badge .em{font-size:22px;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.05)}
+.badge:not(.lock) .em{background:linear-gradient(135deg,rgba(124,58,237,.22),rgba(37,99,235,.16));box-shadow:0 0 18px rgba(124,58,237,.4),inset 0 0 0 1px rgba(124,58,237,.3)}
+.badge .nm{font-size:9.5px;font-weight:700;text-align:center;color:#C8C8D8;line-height:1.25}
+
+/* Planning */
+.cal{display:flex;gap:7px;overflow-x:auto;padding:2px 0 14px;scrollbar-width:none}
+.cal::-webkit-scrollbar{display:none}
+.cal-day{flex:none;width:46px;padding:10px 0;border-radius:15px;background:rgba(255,255,255,.035);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .2s}
+.cal-day.active{background:var(--grad);border-color:transparent;box-shadow:0 8px 24px -8px rgba(124,58,237,.9)}
+.cal-day .d-lbl{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.cal-day.active .d-lbl{color:rgba(255,255,255,.82)}
+.cal-day .d-num{font-size:15px;font-weight:800}
+
+/* Timeline */
+.tl{display:flex;gap:13px;position:relative}
+.tl-time{width:44px;flex:none;font-size:11.5px;font-weight:800;color:var(--dim);padding-top:15px}
+.tl-rail{width:2px;background:rgba(255,255,255,.07);position:relative;flex:none;border-radius:2px}
+.tl-rail::before{content:"";position:absolute;top:15px;left:50%;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;background:#2A2A38;border:2px solid var(--bg)}
+.tl.done .tl-rail::before{background:var(--green);box-shadow:0 0 10px rgba(34,197,94,.8)}
+.tl-bd{flex:1;padding-bottom:14px;min-width:0}
+
+/* City */
+.city{border-radius:22px;overflow:hidden;position:relative;background:linear-gradient(180deg,#0C0A1C 0%,#0A0A14 60%,#08080F 100%);border:1px solid rgba(124,58,237,.2)}
+.city svg{display:block;width:100%}
+.bld{animation:bIn .6s cubic-bezier(.22,1,.36,1) both}
+@keyframes bIn{from{opacity:0;transform:translateY(26px) scaleY(.6)}to{opacity:1;transform:none}}
+.star{animation:twk 3.2s ease-in-out infinite}
+@keyframes twk{0%,100%{opacity:.25}50%{opacity:1}}
+
+/* Charts */
+.chart{display:flex;align-items:flex-end;gap:9px;height:110px;padding-top:8px}
+.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.chart-bar{width:100%;border-radius:8px 8px 5px 5px;background:linear-gradient(180deg,#7C3AED,#2563EB);box-shadow:0 0 16px rgba(124,58,237,.45);min-height:4px;animation:gB .8s cubic-bezier(.22,1,.36,1) both}
+.chart-bar.zero{background:rgba(255,255,255,.07);box-shadow:none}
+@keyframes gB{from{height:0;opacity:.3}}
+.chart-lbl{font-size:10px;font-weight:700;color:var(--dim)}
+
+/* Week dots */
+.wk{display:flex;gap:8px;justify-content:space-between}
+.wd{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px}
+.wd-c{width:100%;aspect-ratio:1;max-width:38px;border-radius:13px;display:grid;place-items:center;font-size:14px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--dim);font-weight:800}
+.wd-c.on{background:linear-gradient(135deg,rgba(245,158,11,.24),rgba(239,68,68,.18));border-color:rgba(245,158,11,.42);color:#FBBF24;box-shadow:0 0 18px -4px rgba(245,158,11,.6)}
+.wd-lbl{font-size:10px;font-weight:700;color:var(--dim)}
+
+/* Pro banner */
+.pro{border-radius:22px;padding:20px;position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(124,58,237,.28),rgba(37,99,235,.16) 60%,rgba(17,17,24,.9));border:1px solid rgba(124,58,237,.4);box-shadow:0 20px 50px -20px rgba(124,58,237,.85);text-align:left;width:100%}
+.pro::after{content:"";position:absolute;top:-60px;right:-60px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.42),transparent 70%)}
+.pro-inner{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.pro-icon{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:var(--grad);box-shadow:0 8px 22px rgba(124,58,237,.6);font-size:20px}
+
+/* Level up */
+.lvlup{position:absolute;inset:0;z-index:200;background:radial-gradient(circle at 50% 42%,rgba(124,58,237,.32) 0%,rgba(7,7,12,.97) 55%);backdrop-filter:blur(16px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;animation:fade .3s}
+.ring{width:150px;height:150px;border-radius:50%;border:2px solid rgba(124,58,237,.55);display:grid;place-items:center;margin-bottom:26px;box-shadow:0 0 90px rgba(124,58,237,.65),inset 0 0 60px rgba(124,58,237,.32);animation:rp .7s cubic-bezier(.34,1.5,.64,1)}
+@keyframes rp{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.ring::before{content:"";position:absolute;width:180px;height:180px;border-radius:50%;border:1px solid rgba(37,99,235,.35);animation:re 2s ease-out infinite}
+@keyframes re{0%{transform:scale(.9);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.lvl-num{font-size:58px;font-weight:900;letter-spacing:-3px;background:linear-gradient(180deg,#fff,#B79CFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ptc{position:absolute;border-radius:50%;bottom:35%;animation:fu linear forwards}
+@keyframes fu{0%{opacity:0;transform:translateY(30px) scale(.4)}15%{opacity:1}100%{opacity:0;transform:translateY(-260px) scale(1.3)}}
+
+/* Toast */
+.toast{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--nav) + 26px + env(safe-area-inset-bottom));z-index:150;background:linear-gradient(135deg,rgba(124,58,237,.95),rgba(37,99,235,.95));padding:11px 20px;border-radius:99px;font-size:14px;font-weight:800;color:#fff;box-shadow:0 12px 34px rgba(124,58,237,.6);animation:ti .4s cubic-bezier(.34,1.5,.64,1);pointer-events:none;white-space:nowrap}
+
+/* Confetti */
+.cf{position:fixed;pointer-events:none;z-index:9999;animation:cfall 1.2s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes cfall{0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(720deg) scale(0)}}
+
+/* Focus */
+.focus{position:absolute;inset:0;z-index:180;background:radial-gradient(circle at 50% 40%,rgba(124,58,237,.28),rgba(7,7,12,.97) 60%);backdrop-filter:blur(18px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;animation:fade .3s}
+.f-time{font-size:78px;font-weight:900;letter-spacing:-4px;font-variant-numeric:tabular-nums;margin:26px 0 8px;background:linear-gradient(180deg,#fff,#B79CFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.f-ring{width:200px;height:200px;border-radius:50%;display:grid;place-items:center;position:relative;border:2px solid rgba(124,58,237,.35);box-shadow:0 0 70px rgba(124,58,237,.45),inset 0 0 50px rgba(124,58,237,.18)}
+
+/* Sheet */
+.sheet-bg{position:absolute;inset:0;z-index:120;background:rgba(0,0,0,.62);backdrop-filter:blur(4px);display:flex;align-items:flex-end;animation:fade .22s}
+.sheet{width:100%;background:var(--card2);border-radius:26px 26px 0 0;border-top:1px solid var(--border2);padding:12px 16px calc(24px + env(safe-area-inset-bottom));animation:su .32s cubic-bezier(.22,1,.36,1)}
+@keyframes su{from{transform:translateY(100%)}to{transform:none}}
+.sheet-h{width:38px;height:4px;border-radius:99px;background:rgba(255,255,255,.18);margin:0 auto 16px}
+.sheet-it{display:flex;align-items:center;gap:13px;width:100%;padding:14px 12px;border-radius:15px;font-size:14.5px;font-weight:650;text-align:left}
+.sheet-it:active{background:rgba(255,255,255,.07)}
+
+/* Overlay screens */
+.overlay{position:absolute;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;animation:sl .3s}
+@keyframes sl{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.o-head{display:flex;align-items:center;gap:12px;padding:max(16px,env(safe-area-inset-top)) 18px 14px;border-bottom:1px solid var(--border);background:rgba(7,7,12,.85);backdrop-filter:blur(20px);z-index:2}
+.o-body{flex:1;overflow-y:auto;padding:18px 18px 60px}
+.icon-btn{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.055);border:1px solid var(--border);color:#fff;flex:none;font-size:16px}
+.icon-btn:active{transform:scale(.92);background:rgba(255,255,255,.1)}
+
+/* Settings */
+.set-row{display:flex;align-items:center;gap:13px;width:100%;padding:14px 15px;border-radius:17px;background:rgba(255,255,255,.028);border:1px solid var(--border);margin-bottom:9px;text-align:left}
+.set-row:active{transform:scale(.985);background:rgba(255,255,255,.06)}
+.set-ico{width:36px;height:36px;border-radius:12px;flex:none;display:grid;place-items:center;background:rgba(255,255,255,.05);color:#B9B9CC;font-size:16px}
+.set-txt{flex:1;font-size:14.5px;font-weight:620}
+
+/* Empty */
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:52px 26px;gap:8px}
+.empty-ico{width:74px;height:74px;border-radius:26px;display:grid;place-items:center;font-size:32px;background:linear-gradient(135deg,rgba(124,58,237,.22),rgba(37,99,235,.16));border:1px solid rgba(124,58,237,.24);margin-bottom:10px;box-shadow:0 0 40px rgba(124,58,237,.24)}
+
+/* Shimmer */
+.shim{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.1) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:sh 1.4s infinite;border-radius:12px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="phone" id="app"></div>
+</div>
+
+<script>
+/* ============================================================
+   STATE
+   ============================================================ */
+const KEY = 'ai-help-coach-v2';
+const DEFAULT = {
+  onboarded: false,
+  user: { name: 'Alex', level: 12, xp: 2450, streak: 12 },
+  prefs: { cats: [], goal: '', time: '30 min', diff: 'Normal' },
+  tasks: [
+    { id:'t1', time:'08:00', emoji:'💧', title:'Réveil & hydratation', sub:'Routine matinale', xp:10, done:true, cat:'org' },
+    { id:'t2', time:'09:00', emoji:'🏫', title:'École / Travail', sub:'Journée', xp:0, done:false, cat:'org', fixed:true },
+    { id:'t3', time:'17:30', emoji:'💪', title:'Fitness', sub:'30 min de sport', xp:50, done:true, cat:'fitness' },
+    { id:'t4', time:'18:30', emoji:'📚', title:'Études', sub:'Réviser 45 min', xp:60, done:true, cat:'studies' },
+    { id:'t5', time:'20:00', emoji:'📖', title:'Lecture', sub:'Lire 10 pages', xp:30, done:false, cat:'reading' },
+    { id:'t6', time:'21:30', emoji:'📅', title:'Organisation', sub:'Préparer demain', xp:20, done:false, cat:'org' },
+  ],
+  goals: [
+    { id:'g1', emoji:'💪', cat:'fitness', title:'Prendre du muscle', progress:68, streak:14, deadline:'30 juin' },
+    { id:'g2', emoji:'📚', cat:'studies', title:'Améliorer mes notes', progress:74, streak:9, deadline:'15 juin' },
+    { id:'g3', emoji:'📖', cat:'reading', title:'Lire 2 livres ce mois-ci', progress:40, streak:5, deadline:'30 juin' },
+  ],
+  badges: [
+    { emoji:'🔥', name:'7 jours', on:true }, { emoji:'🏆', name:'1er objectif', on:true },
+    { emoji:'💪', name:'Fitness', on:true }, { emoji:'📚', name:'Study', on:true },
+    { emoji:'🚀', name:'Niveau 2', on:true }, { emoji:'🧠', name:'Discipline', on:false },
+    { emoji:'🎯', name:'Crusher', on:false }, { emoji:'👑', name:'Légende', on:false },
+  ],
+  stats: { tasks:84, hours:38, week:[180,220,0,260,150,300,90] },
+  last7: [true,true,true,true,true,true,false],
+  chat: [{ role:'ai', text:"Salut 👋 Je suis ton AI Coach.\nComment s'est passée ta journée ?" }]
+};
+
+const CATS = [
+  { id:'fitness', emoji:'💪', label:'Fitness', color:'#EF4444' },
+  { id:'studies', emoji:'📚', label:'Études', color:'#3B82F6' },
+  { id:'money', emoji:'💰', label:'Argent', color:'#22C55E' },
+  { id:'discipline', emoji:'🧠', label:'Discipline', color:'#8B5CF6' },
+  { id:'sleep', emoji:'😴', label:'Sommeil', color:'#6366F1' },
+  { id:'org', emoji:'📅', label:'Organisation', color:'#F59E0B' },
+  { id:'reading', emoji:'📖', label:'Lecture', color:'#EC4899' },
+  { id:'dev', emoji:'🚀', label:'Développement personnel', color:'#06B6D4' },
+];
+const cat = id => CATS.find(c => c.id === id) || CATS[0];
+
+const TABS = [
+  { id:'home', label:'Accueil', ico:'🏠' },
+  { id:'goals', label:'Objectifs', ico:'🎯' },
+  { id:'coach', label:'Coach', ico:'✦' },
+  { id:'planning', label:'Planning', ico:'📅' },
+  { id:'progress', label:'Progression', ico:'📊' },
+];
+
+/* ============================================================
+   XP
+   ============================================================ */
+const need = lvl => 1200 + 150 * lvl;
+function addXp(amount) {
+  let l = S.user.level, x = S.user.xp + amount;
+  const from = l;
+  let leveled = false;
+  while (x >= need(l)) { x -= need(l); l++; leveled = true; }
+  S.user.level = l; S.user.xp = x;
+  if (leveled) setTimeout(() => showLevelUp(from, l), 400);
+  save();
+}
+
+/* ============================================================
+   STATE MGMT
+   ============================================================ */
+let S = load();
+let tab = 'home';
+let stack = [];
+let focusTask = null;
+let toastTimer = null;
+let levelUpData = null;
+
+function load() {
+  try {
+    const r = localStorage.getItem(KEY);
+    if (!r) return JSON.parse(JSON.stringify(DEFAULT));
+    const p = JSON.parse(r);
+    return { ...DEFAULT, ...p, user: { ...DEFAULT.user, ...(p.user||{}) } };
+  } catch (e) { return JSON.parse(JSON.stringify(DEFAULT)); }
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+}
+function update(patch) {
+  Object.assign(S, patch);
+  save();
+  render();
+}
+function showToast(txt) {
+  clearTimeout(toastTimer);
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = txt;
+  document.querySelector('.phone').appendChild(el);
+  toastTimer = setTimeout(() => el.remove(), 1900);
+}
+function showLevelUp(from, to) {
+  levelUpData = { from, to };
+  render();
+}
+function fireConfetti(x, y, n = 18) {
+  const colors = ['#7C3AED','#2563EB','#22C55E','#F59E0B','#EC4899','#A78BFA','#60A5FA'];
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('div');
+    p.className = 'cf';
+    const ang = Math.random() * Math.PI * 2, dist = 70 + Math.random() * 110;
+    p.style.left = x + 'px'; p.style.top = y + 'px';
+    p.style.width = p.style.height = (5 + Math.random() * 6) + 'px';
+    p.style.background = colors[i % colors.length];
+    p.style.borderRadius = Math.random() > .5 ? '50%' : '2px';
+    p.style.boxShadow = '0 0 8px ' + colors[i % colors.length];
+    p.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+    p.style.setProperty('--dy', Math.sin(ang) * dist + 'px');
+    p.style.animationDelay = (Math.random() * .08) + 's';
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 1400);
+  }
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+function toggleTask(id, ev) {
+  const t = S.tasks.find(x => x.id === id);
+  if (!t) return;
+  t.done = !t.done;
+  if (t.done && t.xp > 0) {
+    addXp(t.xp);
+    S.stats.tasks++;
+    if (ev && ev.clientX) fireConfetti(ev.clientX, ev.clientY);
+    showToast(`+${t.xp} XP`);
+  }
+  save(); render();
+}
+function toggleGoalMilestone(id) {
+  const g = S.goals.find(x => x.id === id);
+  if (!g) return;
+  g.progress = Math.min(100, g.progress + 15);
+  S.stats.tasks++;
+  save(); render();
+}
+function addTask(data) {
+  S.tasks.push({ id: 't' + Date.now(), done:false, emoji: cat(data.cat).emoji, ...data });
+  save(); render();
+}
+function updateTask(id, patch) {
+  const t = S.tasks.find(x => x.id === id);
+  if (t) Object.assign(t, patch);
+  save(); render();
+}
+function deleteTask(id) {
+  S.tasks = S.tasks.filter(t => t.id !== id);
+  save(); render();
+}
+
+/* ============================================================
+   AI
+   ============================================================ */
+function aiRespond(input) {
+  const t = (input || '').toLowerCase();
+  const streak = S.user.streak;
+  if (/fatigu|épuis|epuis|crevé|dormi/.test(t)) return {
+    text: "Je comprends. On ne force pas aujourd'hui — on adapte.\n\nVoici une version légère de ton programme :",
+    plan: [
+      { emoji:'💪', label:'Sport', detail:"10 min d'étirements", xp:20 },
+      { emoji:'📚', label:'Études', detail:'20 min de révision', xp:30 },
+      { emoji:'📖', label:'Lecture', detail:'10 min de lecture', xp:15 },
+    ],
+    acts: [{ label:'Appliquer', type:'light' }, { label:'Reporter', type:'postpone' }]
+  };
+  if (/motivation|flemme|démotiv|demotiv|lazy/.test(t)) return {
+    text: `La motivation, c'est un pic. La discipline, c'est une pente.\n\nEt tu as déjà ${streak} jours derrière toi. Ne casse pas ça pour une journée.\n\nJe te propose une seule micro-action de 5 minutes.`,
+    acts: [{ label:'OK, 5 minutes', type:'micro' }, { label:'Ma progression', type:'progress' }]
+  };
+  if (/(pas|raté|manqué).*(sport|séance)/.test(t)) return {
+    text: "Pas grave. Tu avais moins de temps aujourd'hui — ça arrive.\n\nOn peut adapter ton programme 👇",
+    acts: [{ label:'Adapter mon planning', type:'adapt' }, { label:'Séance de 10 min', type:'microSport' }, { label:'Reporter', type:'postpone' }]
+  };
+  if (/(aujourd|quoi faire|programme)/.test(t)) return {
+    text: "Voici ton objectif du jour 👇\n\n💪 30 min de sport\n📚 45 min de révision\n📖 10 pages de lecture\n📅 Préparer demain\n\nTu es à 3/5.",
+    acts: [{ label:'Voir mon planning', type:'goPlanning' }, { label:'Je suis fatigué', type:'fatigue' }]
+  };
+  if (/(progression|analyse|stats|bilan)/.test(t)) return {
+    text: "Analyse de ta semaine 📊\n\n• Régularité : 86 % (excellent)\n• Plus fort : Discipline (89 %)\n• Point faible : Organisation (58 %)\n• Tendance : +12 % vs semaine dernière",
+    acts: [{ label:'Voir ma progression', type:'goProgress' }]
+  };
+  if (/(modifie|changer|adapter|réorganis)/.test(t)) return {
+    text: "Je réorganise ta journée.\n\n• 17:30 — Sport (25 min)\n• 19:00 — Études (30 min)\n• 21:00 — Lecture (10 min)",
+    acts: [{ label:'Appliquer', type:'applyAdapted' }, { label:'Annuler', type:'cancel' }]
+  };
+  if (/^(salut|bonjour|hey|hello|yo|coucou)/.test(t)) return {
+    text: `Salut ! 👋 Prêt à avancer ?\n\nTu as 2 tâches restantes et ton streak de ${streak} jours à protéger.`,
+    acts: [{ label:"Que faire aujourd'hui ?", type:'today' }, { label:'Analyse ma progression', type:'progress' }]
+  };
+  if (/merci|top|génial|super/.test(t)) return {
+    text: "Avec plaisir 💜 C'est toi qui fais le travail.",
+    acts: [{ label:'Voir mon planning', type:'goPlanning' }]
+  };
+  return {
+    text: "Je note ça.\n\nDis-moi plutôt :\n• ce que tu as réussi aujourd'hui\n• ce que tu n'as pas réussi\n• ou comment tu te sens",
+    acts: [{ label:'Je suis fatigué', type:'fatigue' }, { label:'Manque de motivation', type:'motivation' }, { label:'Analyse ma progression', type:'progress' }]
+  };
+}
+function aiAction(act) {
+  switch (act.type) {
+    case 'light':
+      S.tasks = S.tasks.map(t => t.id === 't3' ? { ...t, title:'Sport léger', sub:"10 min d'étirements", xp:20 } : t.id === 't4' ? { ...t, sub:'20 min de révision', xp:30 } : t.id === 't5' ? { ...t, sub:'10 min de lecture', xp:15 } : t);
+      S.chat.push({ role:'ai', text:"C'est fait ✅\nJ'ai allégé ta journée." });
+      break;
+    case 'applyAdapted':
+      S.tasks = S.tasks.map(t => t.id === 't3' ? { ...t, time:'17:30', sub:'25 min de sport', xp:40 } : t.id === 't4' ? { ...t, time:'19:00', sub:'30 min de révision', xp:45 } : t.id === 't5' ? { ...t, time:'21:00', sub:'10 min de lecture', xp:20 } : t);
+      S.chat.push({ role:'ai', text:"Planning réorganisé ✅" });
+      break;
+    case 'postpone': S.chat.push({ role:'ai', text:"Ok, je décale à demain." }); break;
+    case 'micro': S.chat.push({ role:'ai', text:"Parfait 🔥 Fais juste 5 minutes." }); break;
+    case 'microSport':
+      S.tasks = S.tasks.map(t => t.id === 't3' ? { ...t, title:'Sport express', sub:'10 min', xp:25 } : t);
+      S.chat.push({ role:'ai', text:"Séance de 10 min ajoutée 💪" });
+      break;
+    case 'fatigue': chatSend('Je suis fatigué'); return;
+    case 'motivation': chatSend('Je manque de motivation'); return;
+    case 'today': chatSend("Que dois-je faire aujourd'hui ?"); return;
+    case 'progress': tab = 'progress'; break;
+    case 'goPlanning': tab = 'planning'; break;
+    case 'goProgress': tab = 'progress'; break;
+    case 'adapt': chatSend('Modifie mon planning'); return;
+    case 'cancel': S.chat.push({ role:'ai', text:"Pas de souci." }); break;
+  }
+  save(); render();
+}
+function chatSend(text) {
+  const value = (text || '').trim();
+  if (!value) return;
+  S.chat.push({ role:'user', text:value });
+  save(); render();
+  setTimeout(() => {
+    const res = aiRespond(value);
+    S.chat.push({ role:'ai', ...res });
+    save(); render();
+    const sc = document.querySelector('.chat-scroll');
+    if (sc) sc.scrollTop = sc.scrollHeight;
+  }, 700 + Math.random() * 500);
+  const sc = document.querySelector('.chat-scroll');
+  if (sc) sc.scrollTop = sc.scrollHeight;
+}
+
+/* ============================================================
+   RENDER — TEMPLATES
+   ============================================================ */
+function iconBtn(icon, onclick) {
+  return `<button class="icon-btn" onclick="${onclick}">${icon}</button>`;
+}
+
+function renderOnboarding() {
+  const app = document.getElementById('app');
+  app.innerHTML = `<div id="onb"></div>`;
+  let step = 0;
+  const selCats = [];
+  let goal = '', time = '30 min', diff = 'Normal', preview = null, loading = false;
+
+  function draw() {
+    const el = document.getElementById('onb');
+    el.className = 'onb';
+    el.innerHTML = `
+      <div class="onb-head">
+        ${step > 0 ? iconBtn('←','window.__onbBack()') : '<div style="width:38px"></div>'}
+        <div class="dots">${[0,1,2,3,4,5].map(i => `<div class="dot ${i===step?'active':''}"></div>`).join('')}</div>
+        ${step === 0 ? '<button class="btn btn-ghost btn-sm" onclick="window.__onbSkip()">Ignorer</button>' : '<div style="width:38px"></div>'}
+      </div>
+      <div class="onb-body" id="onbBody">${body()}</div>
+      ${step > 0 && step < 5 ? `<div class="onb-foot"><button class="btn btn-primary btn-lg btn-full" id="onbNext" ${nextDisabled()?'disabled':''} onclick="window.__onbNext()">Continuer</button></div>` : ''}
+      ${step === 5 && !loading && preview ? `<div class="onb-foot"><button class="btn btn-primary btn-lg btn-full" onclick="window.__onbFinish()">Commencer mon parcours</button></div>` : ''}
+    `;
+    const nb = document.getElementById('onbNext');
+    if (nb) nb.disabled = nextDisabled();
+  }
+
+  function body() {
+    if (step === 0) return `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80%;text-align:center">
+        <div style="width:108px;height:108px;border-radius:36px;background:var(--grad);display:grid;place-items:center;box-shadow:0 0 70px rgba(124,58,237,.75);margin-bottom:30px;font-size:48px;color:#fff">✦</div>
+        <h1 class="h1" style="font-size:32px;margin-bottom:12px">AI Help Coach</h1>
+        <p class="muted" style="font-size:16px;line-height:1.55;max-width:280px;margin-bottom:40px">Ton coach personnel pour progresser chaque jour.</p>
+        <div style="width:100%">
+          <button class="btn btn-primary btn-lg btn-full" onclick="window.__onbNext()">Commencer</button>
+          <div class="dim tiny" style="text-align:center;margin-top:12px">Gratuit · Aucune carte bancaire</div>
+        </div>
+      </div>`;
+    if (step === 1) return `
+      <h1 class="h1" style="margin-bottom:8px">Que veux-tu améliorer ?</h1>
+      <p class="muted small" style="margin-bottom:24px">Choisis un ou plusieurs domaines.</p>
+      ${CATS.map(c => `
+        <button class="opt ${selCats.includes(c.id)?'sel':''}" onclick="window.__onbToggle('${c.id}')">
+          <div class="em">${c.emoji}</div>
+          <div style="flex:1;font-size:14.5px;font-weight:650">${c.label}</div>
+          <div class="ck">${selCats.includes(c.id)?'✓':''}</div>
+        </button>`).join('')}
+      <div style="height:90px"></div>`;
+    if (step === 2) return `
+      <h1 class="h1" style="margin-bottom:8px">Qu'est-ce que tu veux accomplir ?</h1>
+      <p class="muted small" style="margin-bottom:24px">Sois précis. L'IA s'occupe du reste.</p>
+      <textarea class="input" rows="3" id="onbGoal" placeholder="Ex : Courir 10 km sans m'arrêter" style="resize:none;margin-bottom:18px">${goal}</textarea>
+      <div class="tiny muted" style="margin-bottom:10px;font-weight:700">SUGGESTIONS</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${['Courir 10 km','Prendre du muscle','16 de moyenne','Lire 2 livres / mois','Me lever à 6h'].map(s => `<button class="chip" onclick="window.__onbGoal('${s}')">${s}</button>`).join('')}
+      </div>`;
+    if (step === 3) return `
+      <h1 class="h1" style="margin-bottom:8px">Combien de temps par jour ?</h1>
+      <p class="muted small" style="margin-bottom:24px">Sois réaliste. Un plan tenable vaut mieux qu'un plan parfait.</p>
+      ${[
+        { v:'15 min', e:'⚡', d:'Rapide et efficace' },
+        { v:'30 min', e:'⏱', d:'Le bon équilibre' },
+        { v:'1 h', e:'🕐', d:'Progression solide' },
+        { v:'2 h+', e:'🔥', d:'Mode intensif' },
+      ].map(o => `<button class="opt ${time===o.v?'sel':''}" onclick="window.__onbTime('${o.v}')">
+          <div class="em">${o.e}</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:750">${o.v}</div>
+            <div class="muted tiny" style="margin-top:2px">${o.d}</div>
+          </div>
+          <div class="ck">${time===o.v?'✓':''}</div>
+        </button>`).join('')}`;
+    if (step === 4) return `
+      <h1 class="h1" style="margin-bottom:8px">Quel niveau de difficulté ?</h1>
+      <p class="muted small" style="margin-bottom:24px">Tu pourras ajuster à tout moment.</p>
+      ${[
+        { v:'Facile', e:'🌱', d:'Doucement mais sûrement' },
+        { v:'Normal', e:'⚖️', d:'Le rythme recommandé' },
+        { v:'Ambitieux', e:'🚀', d:'Pour aller vite' },
+      ].map(o => `<button class="opt ${diff===o.v?'sel':''}" onclick="window.__onbDiff('${o.v}')">
+          <div class="em">${o.e}</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:750">${o.v}</div>
+            <div class="muted tiny" style="margin-top:2px">${o.d}</div>
+          </div>
+          <div class="ck">${diff===o.v?'✓':''}</div>
+        </button>`).join('')}`;
+    if (step === 5) {
+      if (loading || !preview) return `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <div class="avatar-ai sm" style="width:44px;height:44px"><svg viewBox="0 0 40 40"><circle cx="14.5" cy="17" r="2.7" fill="#fff"/><circle cx="25.5" cy="17" r="2.7" fill="#fff"/><rect x="14" y="25.2" width="12" height="2.4" rx="1.2" fill="rgba(255,255,255,.85)"/></svg></div>
+          <div><div class="h3">L'IA analyse ton profil…</div><div class="muted tiny" style="margin-top:2px">Génération en cours</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${[0,1,2,3].map(i => `<div class="shim" style="height:62px"></div>`).join('')}
+        </div>`;
+      const total = preview.reduce((a,b) => a + b.xp, 0);
+      return `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <div class="avatar-ai sm" style="width:44px;height:44px"><svg viewBox="0 0 40 40"><circle cx="14.5" cy="17" r="2.7" fill="#fff"/><circle cx="25.5" cy="17" r="2.7" fill="#fff"/><rect x="14" y="25.2" width="12" height="2.4" rx="1.2" fill="rgba(255,255,255,.85)"/></svg></div>
+          <div><div class="h3">Ton plan est prêt ✨</div><div class="muted tiny" style="margin-top:2px">Adapté à ton temps et ton niveau</div></div>
+        </div>
+        <div class="tiny muted" style="font-weight:800;letter-spacing:2px;margin-bottom:12px">AUJOURD'HUI</div>
+        <div class="card" style="padding:6px;margin-bottom:18px">
+          ${preview.map(p => `<div class="task" style="background:transparent;border:none;margin-bottom:6px">
+            <div class="em">${p.emoji}</div>
+            <div class="bd"><div class="ttl">${p.label}</div><div class="sub">${p.detail}</div></div>
+            <div class="xp">+${p.xp} XP</div>
+          </div>`).join('')}
+        </div>
+        <div class="card card-glow" style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:11px">
+            <span style="font-size:24px">🔥</span>
+            <div><div class="h3">Daily XP</div><div class="muted tiny" style="margin-top:1px">Objectif du jour</div></div>
+          </div>
+          <div style="font-size:21px;font-weight:800;letter-spacing:-.8px">+${total}</div>
+        </div>`;
+    }
+    return '';
+  }
+
+  function nextDisabled() {
+    if (step === 1) return selCats.length === 0;
+    if (step === 2) return !goal.trim();
+    return false;
+  }
+
+  window.__onbBack = () => { step = Math.max(0, step - 1); draw(); };
+  window.__onbNext = () => {
+    if (step === 2) { const el = document.getElementById('onbGoal'); if (el) goal = el.value; }
+    step++;
+    if (step === 5 && !preview) {
+      loading = true;
+      draw();
+      setTimeout(() => {
+        preview = [
+          { emoji:'💪', label:'Sport', detail: time === '15 min' ? "10 min d'échauffement" : time === '2 h+' ? "45 min de musculation" : "20 min d'entraînement", xp: time === '15 min' ? 20 : time === '2 h+' ? 70 : 40 },
+          { emoji:'📚', label:'Études', detail: time === '15 min' ? "20 min de révision" : time === '2 h+' ? "1 h de révision" : "45 min de révision", xp: time === '15 min' ? 30 : time === '2 h+' ? 90 : 60 },
+          { emoji:'🧠', label:'Discipline', detail:"10 min de lecture", xp:20 },
+        ];
+        loading = false;
+        draw();
+      }, 1500);
+      return;
+    }
+    draw();
+  };
+  window.__onbToggle = (id) => {
+    const i = selCats.indexOf(id);
+    if (i >= 0) selCats.splice(i, 1); else selCats.push(id);
+    draw();
+  };
+  window.__onbGoal = (s) => { goal = s; draw(); };
+  window.__onbTime = (v) => { time = v; draw(); };
+  window.__onbDiff = (v) => { diff = v; draw(); };
+  window.__onbSkip = () => { S.onboarded = true; save(); render(); };
+  window.__onbFinish = () => {
+    S.onboarded = true;
+    S.prefs = { cats: selCats, goal: goal || 'Progresser', time, diff };
+    S.chat.push({ role:'ai', text:`Parfait ${S.user.name} 👋\nJ'ai analysé ton profil.\n\nObjectif : ${S.prefs.goal}\nTemps : ${time}\nDifficulté : ${diff}` });
+    save(); render();
+  };
+
+  draw();
+}
+
+/* ============================================================
+   RENDER — MAIN TABS
+   ============================================================ */
+function taskRow(t, i, onMore) {
+  return `<div class="task ${t.done?'done':''}" onclick="window.__toggle('${t.id}', event)">
+    <div class="check ${t.done?'on':''}">${t.done?'✓':''}</div>
+    <div class="em">${t.emoji}</div>
+    <div class="bd"><div class="ttl">${t.title}</div><div class="sub">${t.sub}</div></div>
+    ${t.xp>0?`<div class="xp">+${t.xp} XP</div>`:''}
+    ${onMore?`<button class="icon-btn" style="width:26px;height:26px;font-size:14px" onclick="event.stopPropagation();window.__taskMore('${t.id}')">⋯</button>`:''}
+  </div>`;
+}
+
+function renderHome() {
+  const u = S.user, n = need(u.level);
+  const tasks = S.tasks.filter(t => !t.fixed);
+  const done = tasks.filter(t => t.done).length;
+  const pct = tasks.length ? (done / tasks.length) * 100 : 0;
+  return `
+    <div class="top">
+      <div>
+        <div class="h1" style="margin-bottom:4px">Bonjour 👋</div>
+        <div class="muted" style="font-size:15px;font-weight:500">Prêt à progresser aujourd'hui ?</div>
+      </div>
+      <button class="avatar" onclick="window.__nav('profile')">${u.name[0]}<i class="lvl">${u.level}</i></button>
+    </div>
+
+    <div class="card card-glow" style="margin-bottom:16px">
+      <div class="lvl-top">
+        <span class="lvl-label">LEVEL ${u.level}</span>
+        <span class="streak">🔥 ${u.streak} jours</span>
+      </div>
+      <div class="track"><div class="fill" style="width:${(u.xp/n)*100}%"></div></div>
+      <div class="xp-row">
+        <div class="xp-big">${u.xp.toLocaleString('fr-FR')} <span>/ ${n.toLocaleString('fr-FR')} XP</span></div>
+        <div class="tiny muted" style="font-weight:700">${(n-u.xp).toLocaleString('fr-FR')} restants</div>
+      </div>
+    </div>
+
+    <button class="pro" style="margin-bottom:16px" onclick="window.__nav('premium')">
+      <div class="pro-inner">
+        <div class="pro-icon">👑</div>
+        <div style="flex:1;text-align:left">
+          <div style="font-size:14px;font-weight:750">Passe à Pro</div>
+          <div class="muted tiny" style="margin-top:2px">Coach IA illimité & plans avancés</div>
+        </div>
+        <div class="dim" style="font-size:18px">›</div>
+      </div>
+    </button>
+
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div>
+          <div class="h3">Ton objectif du jour</div>
+          <div class="muted tiny" style="margin-top:3px">${done} / ${tasks.length} tâches terminées</div>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:#A78BFA;background:rgba(124,58,237,.12);padding:5px 11px;border-radius:10px">${Math.round(pct)}%</div>
+      </div>
+      <div style="margin-bottom:16px"><div class="track sm"><div class="fill" style="width:${pct}%"></div></div></div>
+      ${tasks.map((t, i) => taskRow(t, i)).join('')}
+    </div>
+
+    <button class="btn btn-primary btn-lg btn-full" style="margin-bottom:18px" onclick="window.__nav('coach')">✦ Parler à mon coach</button>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 2px">
+      <div class="h3">Mes objectifs</div>
+      <div class="tiny muted" style="font-weight:700">${S.goals.length} actifs</div>
+    </div>
+    ${S.goals.slice(0,2).map(g => {
+      const c = cat(g.cat);
+      return `<div class="card" style="margin-bottom:11px;padding:15px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div class="em" style="width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:16px;background:${c.color}22">${g.emoji}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${g.title}</div>
+            <div class="muted tiny" style="margin-top:2px">${c.label}</div>
+          </div>
+          <div style="font-size:15px;font-weight:800;color:#A78BFA">${g.progress}%</div>
+        </div>
+        <div class="track sm"><div class="fill" style="width:${g.progress}%"></div></div>
+      </div>`;
+    }).join('')}
+  `;
+}
+
+function renderGoals() {
+  if (S.goals.length === 0) return `
+    <div class="h1" style="margin-bottom:20px">Mes objectifs</div>
+    <div class="empty">
+      <div class="empty-ico">🎯</div>
+      <div class="h3">Tu n'as pas encore d'objectif</div>
+      <p class="muted small" style="max-width:250px;line-height:1.55;margin-bottom:18px">Un objectif clair est la première étape. L'IA s'occupe de le découper.</p>
+      <button class="btn btn-primary" onclick="window.__nav('newGoal')">+ Créer mon premier objectif</button>
+    </div>`;
+  return `
+    <div class="h1" style="margin-bottom:4px">Mes objectifs</div>
+    <div class="muted small" style="margin-bottom:20px">${S.goals.length} objectif${S.goals.length>1?'s':''} en cours</div>
+    ${S.goals.map(g => {
+      const c = cat(g.cat);
+      return `<div class="goal" style="--gc:${c.color}" onclick="window.__nav('goalDetail', '${g.id}')">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span class="goal-cat" style="color:${c.color}"><span style="font-size:13px">${g.emoji}</span> ${c.label.toUpperCase()}</span>
+          ${g.deadline?`<span class="tiny dim" style="font-weight:700">${g.deadline}</span>`:''}
+        </div>
+        <div class="goal-title">${g.title}</div>
+        <div class="track"><div class="fill" style="width:${g.progress}%"></div></div>
+        <div class="goal-meta">
+          <span style="color:#A78BFA;font-size:14px;font-weight:800">${g.progress}%</span>
+          <span class="streak" style="font-size:11px;padding:4px 9px">🔥 ${g.streak}j</span>
+        </div>
+      </div>`;
+    }).join('')}
+    <button style="width:100%;padding:17px;border-radius:20px;border:1.5px dashed rgba(124,58,237,.4);background:rgba(124,58,237,.06);color:#A78BFA;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:9px" onclick="window.__nav('newGoal')">+ Ajouter un objectif</button>
+  `;
+}
+
+function renderCoach() {
+  return `
+    <div class="chat-wrap">
+      <div class="chat-head">
+        <div class="avatar-ai"><svg viewBox="0 0 40 40"><circle cx="14.5" cy="17" r="2.7" fill="#fff"/><circle cx="25.5" cy="17" r="2.7" fill="#fff"/><rect x="14" y="25.2" width="12" height="2.4" rx="1.2" fill="rgba(255,255,255,.85)"/></svg></div>
+        <div style="flex:1">
+          <div class="h3" style="font-size:16px">AI Coach</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+            <span class="online"></span>
+            <span class="tiny" style="color:#4ADE80;font-weight:700">En ligne</span>
+          </div>
+        </div>
+        <div class="tiny muted" style="font-weight:700;text-align:right;line-height:1.4">Lvl ${S.user.level}<br>🔥 ${S.user.streak}j</div>
+      </div>
+      <div class="chat-scroll" id="chatScroll">
+        ${S.chat.map(m => {
+          if (m.role === 'ai') return `<div class="msg ai">
+            <div class="avatar-ai sm"><svg viewBox="0 0 40 40"><circle cx="14.5" cy="17" r="2.7" fill="#fff"/><circle cx="25.5" cy="17" r="2.7" fill="#fff"/><rect x="14" y="25.2" width="12" height="2.4" rx="1.2" fill="rgba(255,255,255,.85)"/></svg></div>
+            <div class="body">
+              <div class="bub">${m.text}</div>
+              ${m.plan?`<div style="background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.26);border-radius:16px;padding:12px 13px;display:flex;flex-direction:column;gap:9px">${m.plan.map(p => `<div style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600"><span style="font-size:15px">${p.emoji}</span><span>${p.label}</span><span class="muted" style="font-weight:500;font-size:12px">${p.detail}</span><span style="margin-left:auto;font-size:11px;font-weight:800;color:#A78BFA">+${p.xp}</span></div>`).join('')}</div>`:''}
+              ${m.acts?`<div class="acts">${m.acts.map((a, i) => `<button class="chip" onclick="window.__aiAct(${JSON.stringify(a).replace(/"/g,'&quot;')})">${a.label}</button>`).join('')}</div>`:''}
+            </div>
+          </div>`;
+          return `<div class="msg user"><div class="body"><div class="bub">${m.text}</div></div></div>`;
+        }).join('')}
+      </div>
+      <div class="chat-quick">
+        ${["Que dois-je faire aujourd'hui ?","Je manque de motivation","Je suis fatigué","Analyse ma progression","Modifie mon planning"].map(q => `<button class="chip" onclick="window.__chatQuick(this)">${q}</button>`).join('')}
+      </div>
+      <div class="chat-in">
+        <textarea class="chat-txt" id="chatInput" rows="1" placeholder="Écris à ton coach…"></textarea>
+        <button class="send" onclick="window.__chatSend()">➤</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderPlanning() {
+  const days = [];
+  const today = new Date();
+  const labels = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  for (let i = -3; i <= 3; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    days.push({ i, lbl: labels[d.getDay()], num: d.getDate(), isToday: i === 0 });
+  }
+  const sel = 3;
+  return `
+    <div class="h1" style="margin-bottom:4px">Planning</div>
+    <div class="muted small" style="margin-bottom:18px">${days[sel].isToday ? "Aujourd'hui" : days[sel].lbl} · ${S.tasks.filter(t=>t.done).length}/${S.tasks.length} terminées</div>
+
+    <div class="cal">
+      ${days.map((d, i) => `<button class="cal-day ${i===sel?'active':''}" onclick="window.__pickDay(${i})">
+        <span class="d-lbl">${d.lbl}</span>
+        <span class="d-num">${d.num}</span>
+      </button>`).join('')}
+    </div>
+
+    ${S.tasks.length === 0 ? `
+      <div class="empty">
+        <div class="empty-ico">📅</div>
+        <div class="h3">Ton planning est vide</div>
+        <p class="muted small" style="max-width:240px;line-height:1.55;margin-bottom:18px">Ajoute ta première tâche.</p>
+        <button class="btn btn-primary" onclick="window.__nav('newTask')">+ Créer une tâche</button>
+      </div>
+    ` : `
+      <div style="padding-left:2px">
+        ${S.tasks.map(t => `
+          <div class="tl ${t.done?'done':''}">
+            <div class="tl-time">${t.time}</div>
+            <div class="tl-rail"></div>
+            <div class="tl-bd">${taskRow(t, 0, true)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <button style="width:100%;padding:16px;border-radius:19px;margin-top:8px;border:1.5px dashed rgba(124,58,237,.4);background:rgba(124,58,237,.06);color:#A78BFA;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:9px" onclick="window.__nav('newTask')">+ Ajouter une tâche</button>
+    `}
+  `;
+}
+
+function citySVG(level) {
+  const stage = level >= 30 ? 5 : level >= 20 ? 4 : level >= 10 ? 3 : level >= 5 ? 2 : 1;
+  const blds = [
+    { x:8, w:26, h:52, s:2 }, { x:40, w:34, h:96, s:3 }, { x:80, w:22, h:70, s:2 },
+    { x:108, w:42, h:138, s:4 }, { x:156, w:26, h:84, s:3 }, { x:188, w:38, h:168, s:5 },
+    { x:232, w:24, h:112, s:4 }, { x:262, w:30, h:66, s:2 }, { x:298, w:24, h:132, s:5 },
+  ];
+  let starsSVG = '';
+  for (let i = 0; i < 22; i++) {
+    const x = Math.random() * 340, y = Math.random() * 90, r = Math.random() * 1.3 + .4;
+    starsSVG += `<circle class="star" cx="${x}" cy="${y}" r="${r}" fill="#B9A8FF" style="animation-delay:${Math.random()*3}s"/>`;
+  }
+  let bldSVG = '';
+  blds.forEach((b, i) => {
+    if (b.s > stage) return;
+    const y = 190 - b.h;
+    const cols = Math.max(2, Math.floor(b.w / 11));
+    const rows = Math.max(2, Math.floor(b.h / 16));
+    let wins = '';
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const lit = (i + r + c) % 3 !== 0;
+      wins += `<rect x="${b.x+5+c*((b.w-10)/cols)}" y="${y+9+r*((b.h-14)/rows)}" width="${Math.max(3,(b.w-10)/cols-4)}" height="4" rx="1" fill="${lit?'#A78BFA':'rgba(255,255,255,.08)'}" opacity="${lit?.85:1}"/>`;
+    }
+    bldSVG += `<g class="bld" style="animation-delay:${i*.07}s"><rect x="${b.x}" y="${y}" width="${b.w}" height="${b.h}" rx="3" fill="url(#bg${b.s>=4?'2':''})"/>${wins}</g>`;
+  });
+  return `
+    <div class="city">
+      <svg viewBox="0 0 340 210">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3B2C6E"/><stop offset="100%" stop-color="#161428"/></linearGradient>
+          <linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5B3FB8"/><stop offset="100%" stop-color="#1E1A38"/></linearGradient>
+          <linearGradient id="grd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="rgba(124,58,237,0)"/><stop offset="50%" stop-color="rgba(124,58,237,.85)"/><stop offset="100%" stop-color="rgba(37,99,235,0)"/></linearGradient>
+          <radialGradient id="sgl"><stop offset="0%" stop-color="rgba(124,58,237,.35)"/><stop offset="100%" stop-color="rgba(124,58,237,0)"/></radialGradient>
+        </defs>
+        <ellipse cx="170" cy="185" rx="180" ry="70" fill="url(#sgl)"/>
+        ${starsSVG}
+        <circle cx="286" cy="42" r="15" fill="#C9BCFF" opacity=".18"/>
+        <circle cx="286" cy="42" r="9" fill="#DCD2FF" opacity=".5"/>
+        ${bldSVG}
+        <rect x="0" y="188" width="340" height="3" fill="url(#grd)"/>
+        <rect x="0" y="191" width="340" height="19" fill="#0A0A14"/>
+      </svg>
+      <div style="position:absolute;left:16px;bottom:14px;right:16px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:13px;font-weight:800">Ma ville</div>
+          <div class="muted tiny" style="margin-top:1px">Niveau ${stage} / 5</div>
+        </div>
+        <div style="font-size:11px;font-weight:800;color:#C4B5FD;background:rgba(124,58,237,.2);padding:5px 11px;border-radius:99px;border:1px solid rgba(124,58,237,.35)">
+          ${stage < 5 ? `Niv. ${level >= 20 ? 30 : level >= 10 ? 20 : level >= 5 ? 10 : 5} pour évoluer` : 'Ville maximale'}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderProgress() {
+  const u = S.user, n = need(u.level);
+  const pct = (u.xp / n) * 100;
+  const catStats = [
+    { id:'fitness', label:'Fitness', value:78 },
+    { id:'studies', label:'Études', value:64 },
+    { id:'discipline', label:'Discipline', value:89 },
+    { id:'org', label:'Organisation', value:58 },
+  ];
+  const maxW = Math.max(...S.stats.week, 1);
+  return `
+    <div class="h1" style="margin-bottom:4px">Ma progression</div>
+    <div class="muted small" style="margin-bottom:20px">Ton évolution en un coup d'œil</div>
+
+    <div class="card card-glow" style="margin-bottom:16px;text-align:center;padding:24px 18px">
+      <div style="font-size:11px;font-weight:800;letter-spacing:2.6px;color:#A78BFA;margin-bottom:8px">LEVEL ${u.level}</div>
+      <div style="font-size:42px;font-weight:800;letter-spacing:-2px;font-variant-numeric:tabular-nums">${u.xp.toLocaleString('fr-FR')}<span style="font-size:17px;color:var(--muted);margin-left:6px">XP</span></div>
+      <div style="margin:16px 0 10px"><div class="track"><div class="fill" style="width:${pct}%"></div></div></div>
+      <div class="muted tiny" style="font-weight:700">${(n-u.xp).toLocaleString('fr-FR')} XP avant le niveau ${u.level+1}</div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="h3">Série actuelle</div>
+        <span class="streak">🔥 ${u.streak} jours</span>
+      </div>
+      <div class="wk">
+        ${['L','M','M','J','V','S','D'].map((d, i) => `<div class="wd">
+          <div class="wd-c ${S.last7[i]?'on':''}">${S.last7[i]?'✓':'○'}</div>
+          <div class="wd-lbl">${d}</div>
+        </div>`).join('')}
+      </div>
+      <div class="muted tiny" style="margin-top:14px;text-align:center;font-weight:600">Termine une tâche aujourd'hui pour prolonger ta série 🔥</div>
+    </div>
+
+    <div class="h3" style="margin:22px 2px 12px">Statistiques</div>
+    <div class="grid2" style="margin-bottom:22px">
+      <div class="stat"><div class="stat-val">${u.streak}</div><div class="stat-lbl">🔥 Jours de série</div></div>
+      <div class="stat"><div class="stat-val">${S.stats.tasks}</div><div class="stat-lbl">✅ Tâches terminées</div></div>
+      <div class="stat"><div class="stat-val">${S.goals.length}</div><div class="stat-lbl">🎯 Objectifs</div></div>
+      <div class="stat"><div class="stat-val">${S.stats.hours} h</div><div class="stat-lbl">⏱ Temps investi</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="h3" style="margin-bottom:18px">Par catégorie</div>
+      ${catStats.map(c => {
+        const cc = cat(c.id);
+        return `<div style="margin-bottom:17px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:13.5px;font-weight:650">${cc.emoji} ${c.label}</span>
+            <span style="font-size:13px;font-weight:800;color:#A78BFA">${c.value}%</span>
+          </div>
+          <div class="track sm"><div class="fill" style="width:${c.value}%"></div></div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="h3">Cette semaine</div>
+        <span class="tiny muted" style="font-weight:700">${S.stats.week.reduce((a,b)=>a+b,0).toLocaleString('fr-FR')} XP</span>
+      </div>
+      <div class="chart">
+        ${S.stats.week.map((v, i) => `<div class="chart-col">
+          <div class="chart-bar ${v===0?'zero':''}" style="height:${Math.max(4, (v/maxW)*82)}px;animation-delay:${i*60}ms"></div>
+          <div class="chart-lbl">${['L','M','M','J','V','S','D'][i]}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <button class="btn btn-secondary btn-full" style="margin-bottom:22px" onclick="window.__weeklyRecap()">📊 Voir le récap de ma semaine</button>
+
+    <div class="h3" style="margin:22px 2px 12px">Mon monde</div>
+    <div style="margin-bottom:18px">${citySVG(u.level)}</div>
+
+    <button class="pro" onclick="window.__nav('premium')">
+      <div class="pro-inner">
+        <div class="pro-icon">👑</div>
+        <div style="flex:1">
+          <div style="font-size:15.5px;font-weight:800">AI Help Coach Pro</div>
+          <div class="tiny" style="color:#B9A8FF;margin-top:2px">Analyse avancée & monde complet</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;position:relative;z-index:1"><div style="font-size:13px;font-weight:700;color:#C4B5FD">Débloquer →</div></div>
+    </button>
+  `;
+}
+
+/* ============================================================
+   OVERLAYS
+   ============================================================ */
+function renderProfileOverlay() {
+  return `
+    <div class="overlay">
+      <div class="o-head">
+        <button class="icon-btn" onclick="window.__back()">←</button>
+        <div class="h3" style="flex:1;font-size:15px">Profil</div>
+        <button class="icon-btn" onclick="window.__reset()">🗑</button>
+      </div>
+      <div class="o-body">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px">
+          <div style="width:74px;height:74px;border-radius:26px;flex:none;background:var(--grad);display:grid;place-items:center;font-size:30px;font-weight:800;box-shadow:0 12px 34px rgba(124,58,237,.5)">${S.user.name[0]}</div>
+          <div style="flex:1">
+            <div class="h2" style="margin-bottom:4px">${S.user.name}</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:800;color:#C4B5FD;background:rgba(124,58,237,.16);padding:4px 10px;border-radius:99px;border:1px solid rgba(124,58,237,.3)">Niveau ${S.user.level}</span>
+              <span class="streak" style="font-size:11px;padding:4px 10px">🔥 ${S.user.streak}j</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-glow" style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+            <span class="muted small" style="font-weight:700">XP total du niveau</span>
+            <span style="font-size:19px;font-weight:800;font-variant-numeric:tabular-nums">${S.user.xp.toLocaleString('fr-FR')} <span style="color:var(--muted);font-size:13px">/ ${need(S.user.level).toLocaleString('fr-FR')}</span></span>
+          </div>
+          <div class="track"><div class="fill" style="width:${(S.user.xp/need(S.user.level))*100}%"></div></div>
+        </div>
+
+        <div class="grid2" style="margin-bottom:22px">
+          <div class="stat"><div class="stat-val">${S.stats.tasks}</div><div class="stat-lbl">✅ Tâches terminées</div></div>
+          <div class="stat"><div class="stat-val">${S.goals.length}</div><div class="stat-lbl">🎯 Objectifs</div></div>
+          <div class="stat"><div class="stat-val">${S.stats.hours} h</div><div class="stat-lbl">⏱ Temps investi</div></div>
+          <div class="stat"><div class="stat-val">${S.badges.filter(b=>b.on).length}/${S.badges.length}</div><div class="stat-lbl">🏅 Badges</div></div>
+        </div>
+
+        <div class="h3" style="margin:0 2px 12px">Badges</div>
+        <div class="grid4" style="margin-bottom:26px">
+          ${S.badges.map(b => `<div class="badge ${b.on?'':'lock'}"><div class="em">${b.emoji}</div><div class="nm">${b.name}</div></div>`).join('')}
+        </div>
+
+        <div class="h3" style="margin:0 2px 12px">Paramètres</div>
+        <button class="set-row"><div class="set-ico">✏️</div><div class="set-txt">Modifier le profil</div></button>
+        <button class="set-row"><div class="set-ico">🔔</div><div class="set-txt">Notifications</div><div style="width:44px;height:26px;border-radius:99px;background:var(--grad);position:relative;box-shadow:0 0 16px rgba(124,58,237,.6)"><div style="position:absolute;top:3px;left:21px;width:20px;height:20px;border-radius:50%;background:#fff"></div></div></button>
+        <button class="set-row"><div class="set-ico">🎨</div><div class="set-txt">Apparence</div><span class="muted tiny" style="font-weight:700">Sombre</span></button>
+        <button class="set-row"><div class="set-ico">✦</div><div class="set-txt">Réglages AI Coach</div><span class="muted tiny" style="font-weight:700">Équilibré</span></button>
+        <button class="set-row" onclick="window.__export()"><div class="set-ico">📤</div><div class="set-txt">Exporter mes données</div></button>
+        <button class="set-row" onclick="window.__import()"><div class="set-ico">📥</div><div class="set-txt">Importer une sauvegarde</div></button>
+        <button class="set-row"><div class="set-ico">🛡️</div><div class="set-txt">Confidentialité</div></button>
+        <button class="set-row"><div class="set-ico">❓</div><div class="set-txt">Aide & support</div></button>
+        <div style="height:34px"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderPremiumOverlay() {
+  const freeF = ['Coaching IA limité','Objectifs basiques','Planning simple','Progression de base'];
+  const proF = ['Coaching IA illimité','Planning personnalisé avancé','Analyse approfondie','Systèmes avancés','Plus de stats','Plus de personnalisation','Monde virtuel complet','Badges exclusifs'];
+  return `
+    <div class="overlay">
+      <div class="o-head">
+        <button class="icon-btn" onclick="window.__back()">←</button>
+        <div class="h3" style="flex:1;font-size:15px">Premium</div>
+      </div>
+      <div class="o-body" style="text-align:center">
+        <div style="width:78px;height:78px;border-radius:27px;margin:10px auto 20px;background:var(--grad);display:grid;place-items:center;box-shadow:0 0 60px rgba(124,58,237,.7);font-size:36px">👑</div>
+        <h1 class="h1" style="margin-bottom:10px">AI Help Coach Pro</h1>
+        <p class="muted" style="font-size:14.5px;line-height:1.6;max-width:300px;margin:0 auto 28px">Débloque tout le potentiel de ton coach personnel.</p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:26px;text-align:left">
+          <div style="padding:16px;border-radius:20px;background:rgba(255,255,255,.03);border:1px solid var(--border)">
+            <div class="tiny dim" style="font-weight:800;letter-spacing:1.4px;margin-bottom:13px">GRATUIT</div>
+            ${freeF.map(f => `<div style="display:flex;gap:8px;margin-bottom:10px"><div style="width:16px;height:16px;border-radius:50%;flex:none;margin-top:1px;background:rgba(255,255,255,.07);display:grid;place-items:center;font-size:9px;color:var(--dim)">•</div><span class="muted" style="font-size:12px;line-height:1.4">${f}</span></div>`).join('')}
+          </div>
+          <div style="padding:16px;border-radius:20px;background:linear-gradient(160deg,rgba(124,58,237,.24),rgba(37,99,235,.1));border:1px solid rgba(124,58,237,.5)">
+            <div class="tiny" style="font-weight:800;letter-spacing:1.4px;margin-bottom:13px;color:#C4B5FD">PRO</div>
+            ${proF.map(f => `<div style="display:flex;gap:8px;margin-bottom:10px"><div style="width:21px;height:21px;border-radius:50%;flex:none;display:grid;place-items:center;background:rgba(124,58,237,.3);color:#C4B5FD;font-size:11px;font-weight:900">✓</div><span style="font-size:12px;font-weight:600;line-height:1.4;color:#E4DFFF">${f}</span></div>`).join('')}
+          </div>
+        </div>
+
+        <div style="padding:18px;border-radius:20px;margin-bottom:22px;background:var(--card);border:1px solid var(--border)">
+          <div class="muted tiny" style="font-weight:700;margin-bottom:6px">OFFRE DE LANCEMENT</div>
+          <div style="display:flex;align-items:baseline;justify-content:center;gap:9px">
+            <span style="font-size:34px;font-weight:800">4,99 €</span>
+            <span class="muted small" style="font-weight:700">/ mois</span>
+          </div>
+          <div class="dim tiny" style="margin-top:6px">Annulable à tout moment</div>
+        </div>
+
+        <button class="btn btn-primary btn-lg btn-full" style="margin-bottom:12px" onclick="window.__proClick()">Passer à Pro</button>
+        <button class="btn btn-ghost btn-sm" style="width:100%" onclick="window.__back()">Plus tard</button>
+        <div style="height:30px"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderNewGoalOverlay() {
+  return `
+    <div class="overlay">
+      <div class="o-head">
+        <button class="icon-btn" onclick="window.__back()">←</button>
+        <div class="h3" style="flex:1;font-size:15px">Nouvel objectif</div>
+      </div>
+      <div class="o-body">
+        <label class="tiny muted" style="font-weight:800;letter-spacing:1.2px;display:block;margin-bottom:9px">NOM DE L'OBJECTIF</label>
+        <input class="input" id="ngTitle" placeholder="Ex : Courir 10 km" style="margin-bottom:22px">
+
+        <label class="tiny muted" style="font-weight:800;letter-spacing:1.2px;display:block;margin-bottom:11px">CATÉGORIE</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px" id="ngCats">
+          ${CATS.map((c, i) => `<button class="chip" data-cat="${c.id}" style="${i===0?'background:rgba(124,58,237,.2);border-color:rgba(124,58,237,.65);color:#fff':''}">${c.emoji} ${c.label}</button>`).join('')}
+        </div>
+
+        <label class="tiny muted" style="font-weight:800;letter-spacing:1.2px;display:block;margin-bottom:9px">CIBLE</label>
+        <input class="input" id="ngTarget" placeholder="Ex : 10 km, +5 kg, 16/20…" style="margin-bottom:22px">
+
+        <label class="tiny muted" style="font-weight:800;letter-spacing:1.2px;display:block;margin-bottom:9px">ÉCHÉANCE</label>
+        <input class="input" id="ngDeadline" placeholder="Ex : 30 juin" style="margin-bottom:22px">
+
+        <label class="tiny muted" style="font-weight:800;letter-spacing:1.2px;display:block;margin-bottom:11px">DIFFICULTÉ</label>
+        <div style="display:flex;gap:8px;margin-bottom:32px" id="ngDiff">
+          ${['Facile','Normal','Ambitieux'].map((d, i) => `<button class="chip" data-diff="${d}" style="flex:1;text-align:center;${i===1?'background:rgba(124,58,237,.2);border-color:rgba(124,58,237,.65);color:#fff':''}">${d}</button>`).join('')}
+        </div>
+
+        <button class="btn btn-primary btn-lg btn-full" onclick="window.__createGoal()">✦ Générer les étapes</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderGoalDetailOverlay(id) {
+  const g = S.goals.find(x => x.id === id);
+  if (!g) return '';
+  const c = cat(g.cat);
+  return `
+    <div class="overlay">
+      <div class="o-head">
+        <button class="icon-btn" onclick="window.__back()">←</button>
+        <div class="h3" style="flex:1;font-size:15px">Objectif</div>
+      </div>
+      <div class="o-body">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px">
+          <div style="width:60px;height:60px;border-radius:20px;display:grid;place-items:center;font-size:28px;background:${c.color}22;border:1px solid ${c.color}44">${g.emoji}</div>
+          <div style="flex:1">
+            <div class="goal-cat" style="color:${c.color};margin-bottom:5px">${c.label.toUpperCase()}</div>
+            <div class="h2">${g.title}</div>
+          </div>
+        </div>
+
+        <div class="card card-glow" style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+            <span class="muted small" style="font-weight:700">Progression</span>
+            <span style="font-size:28px;font-weight:800;letter-spacing:-1.2px">${g.progress}%</span>
+          </div>
+          <div class="track"><div class="fill" style="width:${g.progress}%"></div></div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <div style="flex:1;text-align:center;padding:10px 6px;border-radius:14px;background:rgba(255,255,255,.04)">
+              <div style="font-size:17px;font-weight:800">🔥 ${g.streak}</div>
+              <div class="muted tiny" style="margin-top:3px">Jours de suite</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:10px 6px;border-radius:14px;background:rgba(255,255,255,.04)">
+              <div style="font-size:17px;font-weight:800">${Math.floor(g.progress/20)}/5</div>
+              <div class="muted tiny" style="margin-top:3px">Étapes</div>
+            </div>
+            <div style="flex:1;text-align:center;padding:10px 6px;border-radius:14px;background:rgba(255,255,255,.04)">
+              <div style="font-size:15px;font-weight:800">${g.deadline}</div>
+              <div class="muted tiny" style="margin-top:5px">Échéance</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="h3" style="margin:22px 2px 12px">Étapes générées par l'IA</div>
+        ${[1,2,3,4,5].map((n, i) => {
+          const done = g.progress >= n * 20;
+          return `<div class="task ${done?'done':''}" onclick="window.__goalMilestone('${g.id}', ${n})">
+            <div class="check ${done?'on':''}">${done?'✓':''}</div>
+            <div class="bd"><div class="ttl">Étape ${n}</div><div class="sub">${done?'Terminée':'À venir'}</div></div>
+            <div class="xp">+200 XP</div>
+          </div>`;
+        }).join('')}
+        <div style="height:30px"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderNewTaskOverlay() {
+  return `
+    <div class="overlay">
+      <div class="o-head">
+        <button class="icon-btn" onclick="window.__back()">←</button>
+        <div class="h3" style="flex:1;font-size:15px">Nouvelle tâche</div>
+      </div>
+      <div class="o-body">
+        <label class="tiny muted" style="font-weight:800;letter-spacing:1.2px;display:block;margin-bottom:9px">TITRE</label>
+        <input class="input" id="ntTitle" placeholder="Ex : Séance de sport" style="margin-bottom:20px">
+
+        <label class="tiny muted" style="font-weight:800;letter-spacing:1.2px;display:block;margin-bottom:9px">DESCRIPTION</label>
+        <input class="input" id="ntSub" placeholder="Ex : 30 min de musculation" style="margin-bottom:20px">
+
+        <div style="display:flex;gap:12px;margin-bottom:20px">
+          <div style="flex:1">
+            <label class="tiny muted" style="font-weight:800;letter-spacing:1.2px;display:block;margin-bottom:9px">HEURE</label>
+            <input class="input" id="ntTime" placeholder="17:30" value="12:00">
+          </div>
+          <div style="flex:1">
+            <label class="tiny muted" style="font-weight:800;letter-spacing:1.2px;display:block;margin-bottom:9px">XP</label>
+            <input class="input" id="ntXp" type="number" value="30">
+          </div>
+        </div>
+
+        <label class="tiny muted" style="font-weight:800;letter-spacing:1.2px;display:block;margin-bottom:11px">CATÉGORIE</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px" id="ntCats">
+          ${CATS.map((c, i) => `<button class="chip" data-cat="${c.id}" style="${i===5?'background:rgba(124,58,237,.2);border-color:rgba(124,58,237,.65);color:#fff':''}">${c.emoji} ${c.label}</button>`).join('')}
+        </div>
+
+        <button class="btn btn-primary btn-lg btn-full" onclick="window.__createTask()">Ajouter la tâche</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderWeeklyRecapOverlay() {
+  const total = S.stats.week.reduce((a,b) => a+b, 0);
+  const best = S.stats.week.indexOf(Math.max(...S.stats.week));
+  const dayNames = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+  const msg = total > 1200 ? "Semaine exceptionnelle 🔥 Tu es dans le top." : total > 700 ? "Belle semaine 💪 Tu progresses à un bon rythme." : total > 300 ? "Semaine correcte. Il reste de la marge." : "Semaine calme. On repart plus fort demain.";
+  return `
+    <div class="lvlup" onclick="window.__closeRecap()">
+      <div style="width:100%;max-width:360px" onclick="event.stopPropagation()">
+        <div style="font-size:11px;font-weight:800;letter-spacing:3px;color:#A78BFA;margin-bottom:8px;text-align:center">RÉCAP HEBDOMADAIRE</div>
+        <div class="h1" style="font-size:26px;text-align:center;margin-bottom:22px">Ta semaine en un coup d'œil</div>
+        <div style="display:flex;align-items:center;gap:13px;padding:14px 16px;border-radius:16px;margin-bottom:9px;background:rgba(255,255,255,.028);border:1px solid var(--border)"><span style="font-size:20px">⚡</span><span style="font-size:14px;font-weight:650">XP gagnés</span><span style="margin-left:auto;font-size:17px;font-weight:800;color:#A78BFA">${total.toLocaleString('fr-FR')}</span></div>
+        <div style="display:flex;align-items:center;gap:13px;padding:14px 16px;border-radius:16px;margin-bottom:9px;background:rgba(255,255,255,.028);border:1px solid var(--border)"><span style="font-size:20px">📊</span><span style="font-size:14px;font-weight:650">Moyenne / jour</span><span style="margin-left:auto;font-size:17px;font-weight:800">${Math.round(total/7)} XP</span></div>
+        <div style="display:flex;align-items:center;gap:13px;padding:14px 16px;border-radius:16px;margin-bottom:9px;background:rgba(255,255,255,.028);border:1px solid var(--border)"><span style="font-size:20px">🏆</span><span style="font-size:14px;font-weight:650">Meilleur jour</span><span style="margin-left:auto;font-size:17px;font-weight:800">${dayNames[best]}</span></div>
+        <div style="display:flex;align-items:center;gap:13px;padding:14px 16px;border-radius:16px;margin-bottom:9px;background:rgba(255,255,255,.028);border:1px solid var(--border)"><span style="font-size:20px">🔥</span><span style="font-size:14px;font-weight:650">Série en cours</span><span style="margin-left:auto;font-size:17px;font-weight:800;color:#FBBF24">${S.user.streak} jours</span></div>
+        <div style="margin-top:18px;padding:16px;border-radius:18px;background:linear-gradient(135deg,rgba(124,58,237,.18),rgba(37,99,235,.08));border:1px solid rgba(124,58,237,.32)">
+          <div style="display:flex;gap:11px;align-items:flex-start">
+            <div class="avatar-ai sm" style="width:36px;height:36px"><svg viewBox="0 0 40 40"><circle cx="14.5" cy="17" r="2.7" fill="#fff"/><circle cx="25.5" cy="17" r="2.7" fill="#fff"/><rect x="14" y="25.2" width="12" height="2.4" rx="1.2" fill="rgba(255,255,255,.85)"/></svg></div>
+            <div style="flex:1;text-align:left">
+              <div style="font-size:12px;font-weight:800;color:#A78BFA;margin-bottom:5px">CONSEIL DU COACH</div>
+              <div style="font-size:13.5px;line-height:1.55;color:#E4DFFF">${msg}</div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-lg btn-full" style="margin-top:22px" onclick="window.__closeRecap()">Continuer</button>
+      </div>
+    </div>`;
+}
+
+function renderFocusOverlay() {
+  if (!focusTask) return '';
+  const t = S.tasks.find(x => x.id === focusTask);
+  if (!t) { focusTask = null; return ''; }
+  const defaultMin = t.xp >= 50 ? 30 : t.xp >= 30 ? 20 : 10;
+  return `
+    <div class="focus" id="focusOv" data-total="${defaultMin*60}">
+      <div class="em" style="font-size:34px;width:60px;height:60px;border-radius:20px;display:grid;place-items:center;background:rgba(255,255,255,.05)">${t.emoji}</div>
+      <div class="h3" style="margin-top:14px;font-size:17px">${t.title}</div>
+      <div class="muted small" style="margin-top:4px;margin-bottom:8px">${t.sub}</div>
+      <div class="f-ring">
+        <div style="text-align:center">
+          <div class="f-time" id="fTime">${String(defaultMin).padStart(2,'0')}:00</div>
+          <div class="tiny muted" style="font-weight:700;letter-spacing:2px;margin-top:-6px" id="fStatus">EN COURS</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:34px">
+        <button class="btn btn-secondary" onclick="window.__fPause()" id="fPause">⏸ Pause</button>
+        <button class="btn btn-secondary" onclick="window.__fReset()">↻ Reset</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:22px;width:100%;max-width:320px">
+        <button class="btn btn-ghost" style="flex:1" onclick="window.__fClose()">Fermer</button>
+        <button class="btn btn-primary" style="flex:1" onclick="window.__fComplete()">✓ Terminer +${t.xp} XP</button>
+      </div>
+    </div>`;
+}
+
+function renderLevelUpOverlay() {
+  if (!levelUpData) return '';
+  let particles = '';
+  for (let i = 0; i < 30; i++) {
+    const l = Math.random()*100, d = Math.random()*.9, dur = 1.6+Math.random()*1.4, sz = 4+Math.random()*7;
+    const col = Math.random() > .5 ? '#A78BFA' : '#60A5FA';
+    particles += `<div class="ptc" style="left:${l}%;width:${sz}px;height:${sz}px;background:${col};animation-delay:${d}s;animation-duration:${dur}s;box-shadow:0 0 12px ${col}"></div>`;
+  }
+  return `
+    <div class="lvlup" onclick="window.__closeLvlUp()">
+      ${particles}
+      <div class="ring"><div class="lvl-num">${levelUpData.to}</div></div>
+      <div style="font-size:12px;font-weight:800;letter-spacing:3.5px;color:#A78BFA;margin-bottom:8px">LEVEL UP</div>
+      <div class="h1" style="font-size:30px;margin-bottom:6px">${levelUpData.from} → ${levelUpData.to}</div>
+      <div class="muted" style="font-size:14.5px;margin-bottom:4px">Tu passes au niveau ${levelUpData.to}</div>
+      <div style="margin-top:14px;margin-bottom:30px;font-size:15px;font-weight:800;color:#4ADE80">+500 XP bonus</div>
+      <button class="btn btn-primary btn-lg" style="min-width:240px" onclick="window.__closeLvlUp()">Continue ton parcours</button>
+    </div>`;
+}
+
+function renderSheet() {
+  if (!window.__sheet) return '';
+  const t = S.tasks.find(x => x.id === window.__sheet);
+  if (!t) { window.__sheet = null; return ''; }
+  return `
+    <div class="sheet-bg" onclick="window.__closeSheet()">
+      <div class="sheet" onclick="event.stopPropagation()">
+        <div class="sheet-h"></div>
+        <div class="h3" style="margin-bottom:12px;padding-left:4px">${t.title}</div>
+        <button class="sheet-it" onclick="window.__toggleFromSheet('${t.id}')"><span style="font-size:16px">✓</span> ${t.done ? 'Marquer non fait' : 'Marquer comme fait'}</button>
+        <button class="sheet-it" onclick="window.__focusFromSheet('${t.id}')"><span style="font-size:16px">▶</span> Démarrer un focus</button>
+        <button class="sheet-it" onclick="window.__postponeTask('${t.id}')"><span style="font-size:16px">🕐</span> Reporter à 22:00</button>
+        <button class="sheet-it" style="color:#F87171" onclick="window.__deleteTask('${t.id}')"><span style="font-size:16px">🗑</span> Supprimer</button>
+      </div>
+    </div>`;
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render() {
+  if (!S.onboarded) { renderOnboarding(); return; }
+  const app = document.getElementById('app');
+  let mainContent = '';
+  if (tab === 'home') mainContent = renderHome();
+  else if (tab === 'goals') mainContent = renderGoals();
+  else if (tab === 'planning') mainContent = renderPlanning();
+  else if (tab === 'progress') mainContent = renderProgress();
+
+  let overlay = '';
+  const top = stack[stack.length - 1];
+  if (top) {
+    if (top.name === 'profile') overlay = renderProfileOverlay();
+    else if (top.name === 'premium') overlay = renderPremiumOverlay();
+    else if (top.name === 'newGoal') overlay = renderNewGoalOverlay();
+    else if (top.name === 'goalDetail') overlay = renderGoalDetailOverlay(top.id);
+    else if (top.name === 'newTask') overlay = renderNewTaskOverlay();
+  }
+
+  const isCoach = tab === 'coach';
+
+  app.innerHTML = `
+    ${isCoach ? renderCoach() : `<div class="content">${mainContent}</div>`}
+    <nav class="bottomnav">
+      ${TABS.map(t => `<button class="nav-item ${tab===t.id?'active':''}" onclick="window.__setTab('${t.id}')">
+        <span class="ico">${t.ico}</span>
+        <span>${t.label}</span>
+      </button>`).join('')}
+    </nav>
+    ${overlay}
+    ${renderSheet()}
+    ${renderFocusOverlay()}
+    ${levelUpData ? renderLevelUpOverlay() : ''}
+  `;
+
+  // Restore chat input value
+  if (isCoach) {
+    const inp = document.getElementById('chatInput');
+    if (inp) {
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.__chatSend(); }
+      });
+      const sc = document.getElementById('chatScroll');
+      if (sc) sc.scrollTop = sc.scrollHeight;
+    }
+  }
+
+  // Category pickers
+  document.querySelectorAll('#ngCats .chip').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#ngCats .chip').forEach(b => { b.style.background=''; b.style.borderColor=''; b.style.color=''; });
+      btn.style.background = 'rgba(124,58,237,.2)'; btn.style.borderColor = 'rgba(124,58,237,.65)'; btn.style.color = '#fff';
+    };
+  });
+  document.querySelectorAll('#ntCats .chip').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#ntCats .chip').forEach(b => { b.style.background=''; b.style.borderColor=''; b.style.color=''; });
+      btn.style.background = 'rgba(124,58,237,.2)'; btn.style.borderColor = 'rgba(124,58,237,.65)'; btn.style.color = '#fff';
+    };
+  });
+  document.querySelectorAll('#ngDiff .chip').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#ngDiff .chip').forEach(b => { b.style.background=''; b.style.borderColor=''; b.style.color=''; });
+      btn.style.background = 'rgba(124,58,237,.2)'; btn.style.borderColor = 'rgba(124,58,237,.65)'; btn.style.color = '#fff';
+    };
+  });
+}
+
+/* ============================================================
+   GLOBAL HANDLERS
+   ============================================================ */
+window.__setTab = (t) => { tab = t; stack = []; render(); };
+window.__nav = (name, id) => { stack.push({ name, id }); render(); };
+window.__back = () => { stack.pop(); render(); };
+window.__reset = () => { if (confirm('Réinitialiser toutes les données ?')) { localStorage.removeItem(KEY); S = JSON.parse(JSON.stringify(DEFAULT)); tab='home'; stack=[]; render(); } };
+window.__toggle = (id, ev) => toggleTask(id, ev);
+window.__taskMore = (id) => { window.__sheet = id; render(); };
+window.__closeSheet = () => { window.__sheet = null; render(); };
+window.__toggleFromSheet = (id) => { window.__sheet = null; toggleTask(id); };
+window.__focusFromSheet = (id) => { window.__sheet = null; focusTask = id; render(); startFocusTimer(); };
+window.__postponeTask = (id) => { updateTask(id, { time: '22:00' }); window.__sheet = null; };
+window.__deleteTask = (id) => { deleteTask(id); window.__sheet = null; };
+window.__pickDay = (i) => { /* noop, only for UI */ };
+window.__aiAct = (act) => aiAction(act);
+window.__chatQuick = (btn) => chatSend(btn.textContent);
+window.__chatSend = () => {
+  const inp = document.getElementById('chatInput');
+  if (!inp) return;
+  const v = inp.value.trim();
+  if (!v) return;
+  inp.value = '';
+  inp.style.height = 'auto';
+  chatSend(v);
+};
+window.__goalMilestone = (id, n) => {
+  const g = S.goals.find(x => x.id === id);
+  if (!g) return;
+  if (g.progress >= n * 20) { g.progress = (n - 1) * 20; } else { g.progress = n * 20; addXp(200); }
+  save(); render();
+};
+window.__createGoal = () => {
+  const title = document.getElementById('ngTitle').value.trim();
+  if (!title) return alert('Donne un nom à ton objectif');
+  const catId = document.querySelector('#ngCats .chip[style*="124,58,237"]')?.dataset.cat || 'fitness';
+  const deadline = document.getElementById('ngDeadline').value.trim() || '30 juin';
+  S.goals.push({ id: 'g' + Date.now(), emoji: cat(catId).emoji, cat: catId, title, progress: 0, streak: 0, deadline });
+  save();
+  showToast('Objectif créé 🎯');
+  stack.pop();
+  tab = 'goals';
+  render();
+};
+window.__createTask = () => {
+  const title = document.getElementById('ntTitle').value.trim();
+  if (!title) return alert('Donne un titre');
+  const sub = document.getElementById('ntSub').value.trim() || 'Tâche';
+  const time = document.getElementById('ntTime').value || '12:00';
+  const xp = Number(document.getElementById('ntXp').value) || 30;
+  const catId = document.querySelector('#ntCats .chip[style*="124,58,237"]')?.dataset.cat || 'org';
+  addTask({ title, sub, time, xp, cat: catId });
+  stack.pop();
+  tab = 'planning';
+  render();
+};
+window.__export = () => {
+  const blob = new Blob([JSON.stringify(S, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ai-coach-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+window.__import = () => {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json,application/json';
+  inp.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const r = new FileReader();
+    r.onload = (ev) => {
+      try { S = JSON.parse(ev.target.result); save(); render(); alert('Données importées ✓'); }
+      catch (err) { alert('Fichier invalide'); }
+    };
+    r.readAsText(file);
+  };
+  inp.click();
+};
+window.__proClick = () => alert("Les paiements ne sont pas encore activés dans cette version.");
+window.__weeklyRecap = () => {
+  const el = document.createElement('div');
+  el.innerHTML = renderWeeklyRecapOverlay();
+  document.querySelector('.phone').appendChild(el.firstChild);
+};
+window.__closeRecap = () => {
+  const el = document.querySelector('.lvlup');
+  if (el && el.querySelector('.ring') === null) el.remove();
+};
+window.__closeLvlUp = () => { levelUpData = null; render(); };
+
+/* Focus timer */
+let focusInterval = null;
+let focusLeft = 0;
+let focusPaused = false;
+function startFocusTimer() {
+  const t = S.tasks.find(x => x.id === focusTask);
+  if (!t) return;
+  const defaultMin = t.xp >= 50 ? 30 : t.xp >= 30 ? 20 : 10;
+  focusLeft = defaultMin * 60;
+  focusPaused = false;
+  clearInterval(focusInterval);
+  focusInterval = setInterval(() => {
+    if (focusPaused) return;
+    focusLeft = Math.max(0, focusLeft - 1);
+    const el = document.getElementById('fTime');
+    if (el) {
+      const mm = String(Math.floor(focusLeft / 60)).padStart(2, '0');
+      const ss = String(focusLeft % 60).padStart(2, '0');
+      el.textContent = mm + ':' + ss;
+    }
+    if (focusLeft === 0) {
+      clearInterval(focusInterval);
+      const st = document.getElementById('fStatus');
+      if (st) st.textContent = 'TERMINÉ ✓';
+      fireConfetti(window.innerWidth / 2, window.innerHeight / 2, 30);
+    }
+  }, 1000);
+}
+window.__fPause = () => {
+  focusPaused = !focusPaused;
+  const b = document.getElementById('fPause');
+  if (b) b.textContent = focusPaused ? '▶ Reprendre' : '⏸ Pause';
+};
+window.__fReset = () => { startFocusTimer(); };
+window.__fClose = () => { clearInterval(focusInterval); focusTask = null; render(); };
+window.__fComplete = () => {
+  const t = S.tasks.find(x => x.id === focusTask);
+  clearInterval(focusInterval);
+  focusTask = null;
+  if (t) toggleTask(t.id);
+  render();
+};
+
+/* ============================================================
+   INIT
+   ============================================================ */
+render();
+</script>
+</body>
+</html>
